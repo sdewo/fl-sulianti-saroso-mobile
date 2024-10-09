@@ -229,7 +229,8 @@ class _JadwalDokterPageState extends State<JadwalDokterPage> {
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide:
+                  const BorderSide(color: Colors.grey, width: 2), // Focus color
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),

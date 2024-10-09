@@ -1,5 +1,7 @@
 import 'package:fl_rspi/screens/jadwal_dokter.dart';
 import 'package:fl_rspi/screens/daftar_poliklinik.dart';
+import 'package:fl_rspi/screens/daftar_konsultasi.dart';
+import 'package:fl_rspi/screens/riwayat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -15,9 +17,13 @@ class _LandingState extends State<Landing> {
 
   final List<Widget> _pages = [
     const JadwalDokterPage(),
-    DaftarPoliklinik(),
-    const Center(child: Text('Konsultasi Online')),
-    const Center(child: Text('Riwayat')),
+    DaftarPoliklinik(
+      title: "Daftar Poliklinik",
+    ),
+    DaftarKonsultasi(
+      title: "Daftar Konsultasi Online",
+    ),
+    HistoryPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -38,7 +44,7 @@ class _LandingState extends State<Landing> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              _buildNavItem('assets/icons/Icon.svg', "Jadwal\nDokter", 0),
+              _buildNavItem('', "Jadwal\nDokter", 0),
               _buildNavItem('assets/icons/ph_hospital_light.svg',
                   "Daftar\nPoliklinik", 1),
               _buildNavItem('assets/icons/konsultasi_online.svg',
@@ -61,14 +67,23 @@ class _LandingState extends State<Landing> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            SvgPicture.asset(
-              svgPath,
-              height: 24, // Adjust the size of the SVG icon
-              color: _selectedIndex == index
-                  ? const Color(
-                      0xFF0C5F5C) // Use the custom color #0C5F5C when selected
-                  : Colors.grey, // Default to grey when not selected
-            ),
+            svgPath.isNotEmpty
+                ? SvgPicture.asset(
+                    svgPath,
+                    height: 24, // Adjust the size of the SVG icon
+                    color: _selectedIndex == index
+                        ? const Color(
+                            0xFF0C5F5C) // Use the custom color #0C5F5C when selected
+                        : Colors.grey, // Default to grey when not selected
+                  )
+                : Icon(
+                    Icons.calendar_today_rounded, // Icon when no image
+                    size: 24,
+                    color: _selectedIndex == index
+                        ? const Color(
+                            0xFF0C5F5C) // Change to custom color when selected
+                        : Colors.grey, // Default to grey when not selected
+                  ),
             const SizedBox(height: 3), // Space between icon and text
             Text(
               label,

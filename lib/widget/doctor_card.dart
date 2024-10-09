@@ -134,8 +134,17 @@ class _DoctorCardState extends State<DoctorCard>
               child: TabBar(
                 controller: _tabController,
                 indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      spreadRadius: 3,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
                 labelColor: Color(0xFF0C5F5C),
                 labelStyle:
                     const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),

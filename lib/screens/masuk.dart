@@ -17,6 +17,25 @@ class _PatientLoginPageState extends State<PatientLoginPage> {
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.teal, // Header background color
+              onPrimary: Colors.white, // Header text color
+              onSurface: Colors.teal.shade900, // Body text color
+            ),
+            dialogBackgroundColor:
+                Colors.white, // Background color of the dialog
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                iconColor: Colors.teal, // Button text color
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null && picked != _selectedDate)
       setState(() {
@@ -69,7 +88,14 @@ class _PatientLoginPageState extends State<PatientLoginPage> {
                 labelText: 'Nomor Rekam Medis/NIK',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(
+                      color: Colors.grey, width: 2), // Focus color
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey, width: 2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                floatingLabelBehavior: FloatingLabelBehavior.never,
               ),
             ),
             const SizedBox(height: 16),
@@ -85,7 +111,16 @@ class _PatientLoginPageState extends State<PatientLoginPage> {
                             _selectedDate!), // Gunakan fungsi formatDate
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(
+                          color: Colors.grey, width: 2), // Focus color
                     ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    floatingLabelStyle:
+                        const TextStyle(color: Colors.grey, fontSize: 16),
                     suffixIcon: Icon(Icons.calendar_today),
                   ),
                 ),
@@ -118,7 +153,7 @@ class _PatientLoginPageState extends State<PatientLoginPage> {
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
+                backgroundColor: const Color(0xFF0C5F5C),
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text(

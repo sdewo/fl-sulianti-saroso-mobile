@@ -1,41 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:fl_rspi/widget/daftar_popup.dart';
+import 'package:intl/date_symbol_data_local.dart'; // Untuk inisialisasi locale data
+import 'package:intl/intl.dart';
 
-class DoctorCard extends StatefulWidget {
+class DoctorCardInteractive extends StatefulWidget {
+  final String poliId;
+  final String poliNama;
   final Map<String, dynamic> doctor;
+  final Map<String, dynamic> patientData;
 
-  const DoctorCard({Key? key, required this.doctor}) : super(key: key);
+  const DoctorCardInteractive(
+      {Key? key,
+      required this.doctor,
+      required this.poliId,
+      required this.poliNama,
+      required this.patientData})
+      : super(key: key);
 
   @override
   _DoctorCardState createState() => _DoctorCardState();
 }
 
-class _DoctorCardState extends State<DoctorCard>
+class _DoctorCardState extends State<DoctorCardInteractive>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? selectedDay;
   String? selectedTime;
+  final ScrollController _scrollController = ScrollController();
+  DateTime currentDate = DateTime.now(); // Tanggal saat aplikasi diakses
+  late String formattedDate; // Buat variabel instance untuk formattedDate
+  late String selectedDates; // Buat variabel instance untuk formattedDate
+  DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Inisialisasi formattedDate saat initState
+    formattedDate =
+        "${currentDate.day.toString().padLeft(2, '0')}-${currentDate.month.toString().padLeft(2, '0')}-${currentDate.year}";
+
+    selectedDates =
+        "${currentDate.year}-${currentDate.month.toString().padLeft(2, '0')}-${currentDate.day.toString().padLeft(2, '0')}";
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Extract schedules (reguler and eksekutif)
-    final Map<String, dynamic> jadwal = widget.doctor["jadwal"] ?? {};
-    final Map<String, String> regulerSchedule =
-        Map<String, String>.from(jadwal["reguler"] ?? {});
-    final List eksekutifSchedule = jadwal["eksekutif"] ?? [];
+    print(widget.doctor);
 
-    // Safely get doctor details
+    final Map<String, dynamic> jadwal = widget.doctor["jadwal"] ?? {};
+
     final String imageUrl =
         widget.doctor["foto"] ?? "https://via.placeholder.com/150";
     final String doctorName = widget.doctor["nama"] ?? "Unknown Doctor";
@@ -44,7 +66,7 @@ class _DoctorCardState extends State<DoctorCard>
 
     return Card(
       color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 5),
       elevation: 0.5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -54,7 +76,7 @@ class _DoctorCardState extends State<DoctorCard>
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(bottom: 0, left: 20, right: 20, top: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,147 +137,130 @@ class _DoctorCardState extends State<DoctorCard>
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            // Tab bar for Reguler and Eksekutif
-            Container(
-              height: kToolbarHeight - 6,
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFEFEF),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white),
-                labelColor: const Color(0xFF0C5F5C),
-                labelStyle:
-                    const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-                unselectedLabelColor: Colors.black,
-                tabs: const [
-                  Tab(text: "Reguler"),
-                  Tab(text: "Eksekutif"),
-                ],
+            const SizedBox(height: 15),
+            const Text(
+              'Pilih Jadwal yang Sesuai',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Colors.black,
               ),
             ),
-            const SizedBox(height: 20),
-            // Jadwal Reguler dan Eksekutif
-            SizedBox(
-              height: 120,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildScheduleList(regulerSchedule),
-                  _buildEksekutifSchedule(eksekutifSchedule),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Display selected schedule
-            if (selectedDay != null && selectedTime != null)
-              Center(
-                child: Text(
-                  "Jadwal Terpilih: $selectedDay, $selectedTime",
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.w600),
+            const SizedBox(height: 15),
+            GestureDetector(
+              onTap: () => _selectDate(context),
+              child: AbsorbPointer(
+                child: TextField(
+                  style: const TextStyle(height: 0.2),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.calendar_month),
+                    labelText: _selectedDate == null
+                        ? 'Pilih tanggal'
+                        : formatDate(_selectedDate!), // Use formatDate function
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(
+                          color: Colors.grey, width: 2), // Focus color
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    floatingLabelStyle:
+                        const TextStyle(color: Colors.grey, fontSize: 16),
+                  ),
                 ),
               ),
-            const SizedBox(height: 10),
-            // Button to confirm registration
+            ),
+            const SizedBox(height: 8),
+            // Display selected schedule
+            if (_selectedDate != null)
+              Center(
+                child: SizedBox(
+                  width: double.infinity, // Set width to full available width
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Show popup dialog
+                      _showDaftarPopup();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0C5F5C),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text("Daftar"),
+                  ),
+                ),
+              ),
+            SizedBox(
+              height: 10,
+            )
           ],
         ),
       ),
     );
   }
 
-  // Build the regular schedule list
-  Widget _buildScheduleList(Map<String, String> schedule) {
-    if (schedule.isEmpty) {
-      return const Center(child: Text("No regular schedule available"));
-    }
+  // String formatDate(DateTime date) {
+  //   return "${date.day}"
+  //       "${date.month}"
+  //       "${date.year}";
+  // }
 
-    // Daftar hari yang diperbolehkan (Senin hingga Sabtu)
-    final allowedDays = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-
-    // Filter days that have a schedule and are within the allowed days
-    final availableDays = schedule.entries
-        .where((entry) => allowedDays.contains(entry.key) && entry.value != "-")
-        .toList();
-
-    if (availableDays.isEmpty) {
-      return const Center(child: Text("No available schedule for this doctor"));
-    }
-
-    return Wrap(
-      // spacing: 8,
-      // runSpacing: 8,
-      // alignment: WrapAlignment.spaceBetween, // Center the items horizontally
-      crossAxisAlignment: WrapCrossAlignment.end, // Center the items vertically
-      children: availableDays.map((entry) {
-        final day = entry.key;
-        final time = entry.value;
-        return SizedBox(
-          width: 100, // Fixed width for uniformity
-          child: OutlinedButton(
-            onPressed: () {
-              setState(() {
-                selectedDay = day;
-                selectedTime = time;
-              });
-            },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              side: const BorderSide(color: Color(0xFF0C5F5C), width: 1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "$day", // Sesuaikan tanggal jika diperlukan
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center, // Center align the text
-                ),
-                Text(
-                  time,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center, // Center align the text
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
+  String formatDate(DateTime date) {
+    // Define the format you want: d MMMM y (7 Oktober 2024)
+    return DateFormat("d MMMM y").format(date);
   }
 
-  // Build executive schedule list (non-interactive)
-  Widget _buildEksekutifSchedule(List schedule) {
-    if (schedule.isEmpty) {
-      return const Center(child: Text("No executive schedule available"));
-    }
-
-    return ListView.builder(
-      itemCount: schedule.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: Text(
-            schedule[index],
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.teal, // Header background color
+              onPrimary: Colors.white, // Header text color
+              onSurface: Colors.teal.shade900, // Body text color
+            ),
+            dialogBackgroundColor:
+                Colors.white, // Background color of the dialog
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                iconColor: Colors.teal, // Button text color
+              ),
             ),
           ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  void _showDaftarPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Gunakan formatter untuk mengubah _selectedDate menjadi String
+        String? formattedDate = _selectedDate != null
+            ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
+            : null;
+        print(formattedDate);
+        return ConfirmationPopup(
+          selectedDay: formatDate(_selectedDate!),
+          selectedDateTime: formattedDate, // Format _selectedDate ke String
+          poliId: widget.poliId,
+          poliNama: widget.poliNama,
+          patientData: widget.patientData,
+          doctor: widget.doctor,
         );
       },
     );

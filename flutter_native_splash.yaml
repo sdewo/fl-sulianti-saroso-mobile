@@ -1,0 +1,9 @@
+flutter_native_splash:
+  color: "#ECF6F6"
+  image: assets/images/App_Icon_Sulianti_Saroso_Mobile.png
+  color_dark: "#ECF6F6" # Warna latar belakang untuk dark mode
+  android_12: 
+    image: assets/images/App_Icon_Sulianti_Saroso_Mobile.png
+    color_dark: "#ECF6F6" # Warna latar belakang untuk dark mode
+  android: true
+  ios: true

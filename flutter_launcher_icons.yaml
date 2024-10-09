@@ -1,0 +1,7 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/rspi.png"
+  adaptive_icon_foreground: "assets/images/rspi.png"
+  adaptive_icon_background: "#ffffff"
+  remove_alpha_ios: true
